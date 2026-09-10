@@ -1,0 +1,3 @@
+data/*.csv
+olist_funnel.db
+__pycache__/
