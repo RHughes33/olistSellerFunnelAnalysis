@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olist Seller Funnel Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff;
+    --panel:#f1f2f6;
+    --panel-line:#dfe1e8;
+    --ink:#14213d;
+    --muted:#5b6472;
+    --green:#2f6f4f;
+    --green-soft:#e4efe8;
+    --rust:#b8452f;
+    --rust-soft:#f7e6e1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:56px 28px 80px;
+  }
+  header{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:28px;
+    margin-bottom:48px;
+  }
+  .eyebrow{
+    color:var(--muted);
+    font-size:14px;
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:clamp(28px, 4vw, 42px);
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  .dek{
+    max-width:640px;
+    color:var(--muted);
+    font-size:16px;
+    margin:0;
+  }
+  section{ margin-bottom:56px; }
+  h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-style:italic;
+    font-size:22px;
+    margin:0 0 24px;
+  }
+
+  /* --- Funnel --- */
+  .funnel{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+  }
+  .funnel-stage{
+    flex:1;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    padding:24px 20px;
+    position:relative;
+  }
+  .funnel-stage + .funnel-stage{ border-left:none; }
+  .stage-label{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 8px;
+  }
+  .stage-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:clamp(24px, 3vw, 34px);
+    margin:0;
+  }
+  .stage-pct{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--green);
+    margin-top:6px;
+  }
+  .drop{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:64px;
+    flex-shrink:0;
+    background:var(--rust-soft);
+    border-top:1px solid var(--panel-line);
+    border-bottom:1px solid var(--panel-line);
+  }
+  .drop-inner{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--rust);
+    text-align:center;
+    line-height:1.3;
+  }
+
+  /* --- Charts --- */
+  .chart-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:32px;
+  }
+  .chart-panel{
+    border:1px solid var(--panel-line);
+    padding:20px 20px 8px;
+  }
+  .chart-panel p{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 16px;
+  }
+  .chart-canvas-wrap{ height:340px; }
+  @media (max-width:760px){
+    .chart-grid{ grid-template-columns:1fr; }
+    .funnel{ flex-direction:column; }
+    .drop{ width:auto; padding:8px; }
+  }
+
+  /* --- Notes --- */
+  .note-lead{
+    background:var(--ink);
+    color:#fff;
+    padding:28px 28px;
+    margin-bottom:20px;
+  }
+  .note-lead .stat{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:30px;
+    color:#f0c9bd;
+  }
+  .note-lead p{ margin:10px 0 0; max-width:600px; color:#d8dbe4; }
+  .note-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  .note{
+    border-left:3px solid var(--green);
+    padding:4px 0 4px 18px;
+  }
+  .note h3{
+    font-size:14px;
+    margin:0 0 6px;
+  }
+  .note p{
+    font-size:14px;
+    color:var(--muted);
+    margin:0;
+  }
+  @media (max-width:760px){ .note-row{ grid-template-columns:1fr; } }
+
+  footer{
+    border-top:1px solid var(--panel-line);
+    padding-top:24px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:16px;
+    align-items:center;
+  }
+  .tags{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tag{
+    font-size:12px;
+    color:var(--muted);
+    border:1px solid var(--panel-line);
+    padding:4px 10px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  a.repo-link{
+    color:var(--ink);
+    font-size:14px;
+    text-decoration:none;
+    border-bottom:1px solid var(--ink);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Olist marketplace &middot; seller acquisition</p>
+    <h1>Where sellers actually fall out of the funnel</h1>
+    <p class="dek">8,000 marketing leads, traced through deal closure to their first completed sale on the Olist marketplace.</p>
+  </header>
+
+  <section>
+    <h2>The funnel</h2>
+    <div class="funnel">
+      <div class="funnel-stage">
+        <p class="stage-label">Lead (MQL)</p>
+        <p class="stage-count">8,000</p>
+        <p class="stage-pct">100% of leads</p>
+      </div>
+      <div class="drop"><div class="drop-inner">&minus;89.5%<br>7,158 lost</div></div>
+      <div class="funnel-stage">
+        <p class="stage-label">Deal won</p>
+        <p class="stage-count">842</p>
+        <p class="stage-pct">10.5% of leads</p>
+      </div>
+      <div class="drop"><div class="drop-inner">&minus;54.9%<br>462 lost</div></div>
+      <div class="funnel-stage">
+        <p class="stage-label">First sale made</p>
+        <p class="stage-count">380</p>
+        <p class="stage-pct">4.75% of leads</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two ways to cut the drop-off</h2>
+    <div class="chart-grid">
+      <div class="chart-panel">
+        <p>Lead to deal-won conversion, by acquisition channel</p>
+        <div class="chart-canvas-wrap"><canvas id="originChart"></canvas></div>
+      </div>
+      <div class="chart-panel">
+        <p>Deal-won to first-sale conversion, by product category</p>
+        <div class="chart-canvas-wrap"><canvas id="segmentChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What it means</h2>
+    <div class="note-lead">
+      <span class="stat">55%</span>
+      <p>of sellers who signed a deal never listed a product that actually sold. The bottleneck isn't getting sellers to say yes. It's what happens to them after onboarding.</p>
+    </div>
+    <div class="note-row">
+      <div class="note">
+        <h3>Channel quality varies 5&times;</h3>
+        <p>Paid and organic search convert leads to deals at ~12%; email sits at 3%. Worth deprioritising or reworking email as an acquisition channel.</p>
+      </div>
+      <div class="note">
+        <h3>Onboarding gap is category-specific</h3>
+        <p>Bags and household categories convert deal to sale at 60% or more. Food supplements and computers sit near 30%. Onboarding support could target these categories first.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="tags">
+      <span class="tag">SQL</span>
+      <span class="tag">SQLite</span>
+      <span class="tag">Python</span>
+      <span class="tag">pandas</span>
+    </div>
+    <a class="repo-link" href="https://github.com/RHughes33/olistSellerFunnelAnalysis" target="_blank" rel="noopener">View the full analysis on GitHub</a>
+  </footer>
+
+</div>
+
+<script>
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.color = '#5b6472';
+
+const originData = {
+  labels: ['Unknown','Paid search','Organic search','Direct','Referral','Social','Display','Email','Other'],
+  values: [16.29,12.30,11.80,11.22,8.45,5.56,5.08,3.04,2.67]
+};
+
+const segmentData = {
+  labels: ['Bags & backpacks','Household utilities','Pet','Sports & leisure','Toys','Audio/video electronics','Health & beauty','Construction/garden','Bed bath table','Home decor','Car accessories','Computers','Food & drink','Food supplement'],
+  values: [63.64,61.97,56.67,56.00,50.00,48.44,48.39,46.38,45.45,41.90,38.96,35.29,34.62,28.57]
+};
+
+new Chart(document.getElementById('originChart'), {
+  type: 'bar',
+  data: {
+    labels: originData.labels,
+    datasets: [{
+      data: originData.values,
+      backgroundColor: originData.values.map(v => v < 6 ? '#b8452f' : '#2f6f4f'),
+      borderRadius: 2,
+      barThickness: 16
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => ctx.parsed.x + '%' } } },
+    scales: {
+      x: { ticks: { callback: (v) => v + '%' }, grid: { color: '#eceef2' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('segmentChart'), {
+  type: 'bar',
+  data: {
+    labels: segmentData.labels,
+    datasets: [{
+      data: segmentData.values,
+      backgroundColor: segmentData.values.map(v => v < 35 ? '#b8452f' : '#2f6f4f'),
+      borderRadius: 2,
+      barThickness: 14
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => ctx.parsed.x + '%' } } },
+    scales: {
+      x: { ticks: { callback: (v) => v + '%' }, grid: { color: '#eceef2' } },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
