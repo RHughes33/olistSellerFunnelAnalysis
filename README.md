@@ -59,6 +59,16 @@ convert from signed to selling at 57% to 64%, versus `food_supplement` and
 `computers` at 29% to 35%. Onboarding support probably makes more sense
 targeted at specific categories than applied the same way across the board.
 
+## Power BI dashboard
+
+The same analysis rebuilt as an interactive Power BI report, with a funnel
+visual, conversion breakdowns by channel and category, and a headline stat
+card.
+
+![Power BI dashboard](powerbi/dashboard_screenshot.png)
+
+The `.pbix` file is in `powerbi/` if you want to open it directly in Power BI Desktop.
+
 ## How to reproduce
 
 ```bash
